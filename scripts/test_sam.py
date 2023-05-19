@@ -19,7 +19,12 @@ if __name__ == '__main__':
     sam = sam_model_registry["vit_h"](checkpoint="ckpt/sam_vit_h_4b8939.pth")
     mask_generator = SamAutomaticMaskGenerator(sam)
 
-    for img_file in tqdm(input_folder.iterdir()):
+    img_list = []
+    for img_file in input_folder.iterdir():
+        img_list.append(img_file)
+    img_list.sort()
+
+    for img_file in tqdm(img_list):
         input_img = torchvision.io.read_image(str(img_file))
         input_img = input_img.permute(1, 2, 0)
         input_img = input_img.numpy()
@@ -28,6 +33,8 @@ if __name__ == '__main__':
         for mask in masks:
             rand_color = np.random.rand(3)
             seg = mask['segmentation']
+            # mask_loc = np.transpose(seg.nonzero())
+            # mask_center =
             mask_img[seg] = rand_color
         mask_overlay = (input_img.astype('float32') / 255.0) * 0.5 + mask_img * 0.5
         mask_overlay = (mask_overlay * 255).astype('uint8')
